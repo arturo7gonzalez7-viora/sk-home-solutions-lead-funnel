@@ -1,69 +1,209 @@
 import Image from "next/image";
+import LeadForm from "./components/LeadForm";
+
+const TRUST_ITEMS = [
+  "Any condition",
+  "No fees or commissions",
+  "No showings",
+  "Close on your timeline",
+];
+
+const STEPS = [
+  {
+    n: "01",
+    title: "Tell us about the property",
+    body: "Two minutes, right here. Address, condition, and when you want to close.",
+  },
+  {
+    n: "02",
+    title: "We call you within 24 hours",
+    body: "A real person from SK Home Solutions reviews the details and reaches out directly.",
+  },
+  {
+    n: "03",
+    title: "You get a cash offer",
+    body: "No obligation. Accept it, counter it, or walk away — your call, every step.",
+  },
+];
+
+const BENEFITS = [
+  {
+    title: "No repairs, ever",
+    body: "We buy homes exactly as they sit. Skip the contractors and the clean-up.",
+  },
+  {
+    title: "No agent, no commission",
+    body: "You keep more of the sale price because there's no listing or agent fee.",
+  },
+  {
+    title: "Pick your closing date",
+    body: "Close in as little as two weeks, or take the time you need to move out.",
+  },
+  {
+    title: "Backed by a real team",
+    body: "SK Home Solutions has closed deals across the Denver metro — this isn't a call center.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-1 flex-col font-sans">
+      {/* Header */}
+      <header className="border-b border-bone/10">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/sk-logo.png"
+              alt="SK Home Solutions"
+              width={34}
+              height={34}
+              className="h-8 w-8 object-contain"
+              priority
+            />
+            <span className="font-display text-sm tracking-[0.2em] text-bone uppercase">
+              SK Home Solutions
+            </span>
+          </div>
+          <a
+            href="tel:+13035879303"
+            className="hidden text-sm font-medium text-bone/70 transition-colors hover:text-gold-light sm:block"
+          >
+            (303) 587-9303
+          </a>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="relative flex-1 overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(closest-side, var(--gold), transparent)",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+        <section className="relative mx-auto max-w-6xl px-6 pt-16 pb-24 sm:pt-24">
+          <div className="grid gap-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-12">
+            {/* Copy column */}
+            <div>
+              <p className="gold-text font-display text-sm tracking-[0.3em] uppercase">
+                Cash offer in 24 hours
+              </p>
+              <h1 className="font-display mt-5 text-4xl leading-[1.08] text-bone sm:text-5xl lg:text-[3.4rem]">
+                Sell your house on{" "}
+                <span className="italic">your terms</span> — not the
+                market&rsquo;s.
+              </h1>
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-bone/60 sm:text-lg">
+                Answer a few questions about your property. SK Home
+                Solutions reviews it personally and calls with a real,
+                no-obligation cash offer — usually within a day.
+              </p>
+
+              <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+                {TRUST_ITEMS.map((item) => (
+                  <div key={item} className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
+                    <span className="text-xs leading-snug text-bone/60 sm:text-sm">
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </dl>
+
+              <div className="gold-rule mt-14 hidden h-px w-full lg:block" />
+
+              <ol className="mt-12 hidden space-y-8 lg:block">
+                {STEPS.map((step) => (
+                  <li key={step.n} className="flex gap-5">
+                    <span className="font-display text-2xl text-gold-light/70">
+                      {step.n}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-bone">
+                        {step.title}
+                      </p>
+                      <p className="mt-1 text-sm text-bone/50">{step.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Form column */}
+            <div className="lg:sticky lg:top-10">
+              <LeadForm />
+            </div>
+          </div>
+
+          {/* Steps — mobile only, under the form */}
+          <ol className="mt-16 grid gap-6 border-t border-bone/10 pt-12 sm:grid-cols-3 lg:hidden">
+            {STEPS.map((step) => (
+              <li key={step.n}>
+                <span className="font-display text-xl text-gold-light/70">
+                  {step.n}
+                </span>
+                <p className="mt-2 text-sm font-semibold text-bone">
+                  {step.title}
+                </p>
+                <p className="mt-1 text-sm text-bone/50">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* Benefits */}
+        <section className="border-t border-bone/10 bg-walnut-dim/40">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <p className="gold-text font-display text-sm tracking-[0.3em] uppercase">
+              Why sellers choose us
+            </p>
+            <h2 className="font-display mt-4 max-w-xl text-3xl text-bone sm:text-4xl">
+              A straightforward way to sell, backed by people who close.
+            </h2>
+            <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+              {BENEFITS.map((b) => (
+                <div key={b.title}>
+                  <div className="h-px w-8 bg-gold" />
+                  <p className="mt-4 text-sm font-semibold tracking-wide text-bone uppercase">
+                    {b.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-bone/50">
+                    {b.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-bone/10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/sk-logo.png"
+              alt="SK Home Solutions"
+              width={24}
+              height={24}
+              className="h-6 w-6 object-contain opacity-80"
+            />
+            <span className="text-xs tracking-wide text-bone/40 uppercase">
+              SK Home Solutions
+            </span>
+          </div>
+          <p className="text-xs text-bone/30">
+            &copy; 2026 SK Home Solutions. Denver
+            metro &amp; surrounding areas.{" "}
+            <a href="tel:+13035879303" className="text-bone/50 hover:text-gold-light">
+              (303) 587-9303
+            </a>
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }
