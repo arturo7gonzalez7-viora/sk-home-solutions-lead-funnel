@@ -42,6 +42,42 @@ const TIMELINES: { value: Timeline; label: string }[] = [
 
 const STEP_LABELS = ["Property", "Timeline", "Contact"];
 
+const TRACKING_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "fbclid",
+] as const;
+
+// Where did this visitor come from? Reads the ad link's UTM tags and
+// Facebook click id, and remembers the first values seen this visit so a
+// reload without them still credits the ad.
+function getTracking(): Record<string, string | null> {
+  if (typeof window === "undefined") return {};
+  const params = new URLSearchParams(window.location.search);
+  let saved: Record<string, string | null> = {};
+  try {
+    saved = JSON.parse(sessionStorage.getItem("sk_tracking") ?? "{}");
+  } catch {}
+  if (TRACKING_KEYS.some((k) => params.get(k))) {
+    saved = {
+      ...Object.fromEntries(TRACKING_KEYS.map((k) => [k, params.get(k)])),
+      referrer: document.referrer || null,
+      landing_url: window.location.href,
+    };
+    try {
+      sessionStorage.setItem("sk_tracking", JSON.stringify(saved));
+    } catch {}
+  }
+  return {
+    referrer: document.referrer || null,
+    landing_url: window.location.href,
+    ...saved,
+  };
+}
+
 async function saveLead(payload: Record<string, unknown>) {
   const res = await fetch("/api/leads", {
     method: "POST",
@@ -78,11 +114,7 @@ export default function LeadForm() {
       const { id } = await saveLead({
         id: leadId ?? undefined,
         step_completed: step,
-        source:
-          typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("utm_campaign") ??
-              new URLSearchParams(window.location.search).get("utm_source")
-            : null,
+        ...(leadId ? {} : getTracking()),
         ...extra,
       });
       setLeadId(id);
@@ -120,15 +152,15 @@ export default function LeadForm() {
   if (done) {
     return (
       <div className="rounded-2xl border border-gold-deep/40 bg-walnut/60 p-8 text-center sm:p-12">
-        <p className="font-display text-sm tracking-[0.25em] text-gold-light uppercase">
+        <p className="text-xs font-medium tracking-[0.4em] text-gold-light uppercase">
           You&rsquo;re all set
         </p>
-        <h3 className="font-display mt-3 text-2xl text-bone sm:text-3xl">
+        <h3 className="font-display mt-4 text-3xl text-bone sm:text-4xl">
           Thanks, {fullName.split(" ")[0] || "there"}.
         </h3>
         <p className="mx-auto mt-3 max-w-sm text-sm text-bone/70">
-          A member of the SK Home Solutions team will call you within 24
-          hours with next steps and your cash offer.
+          A member of the SK Home Solutions team will call you shortly
+          with next steps and your cash offer.
         </p>
       </div>
     );
