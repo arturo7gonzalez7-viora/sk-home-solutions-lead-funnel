@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CONSENT_TEXT } from "@/lib/lead-meta";
+import { trackLead } from "@/lib/meta-pixel";
 
 type Condition =
   | "move_in_ready"
@@ -65,6 +66,8 @@ function getTracking(): Record<string, string | null> {
   if (TRACKING_KEYS.some((k) => params.get(k))) {
     saved = {
       ...Object.fromEntries(TRACKING_KEYS.map((k) => [k, params.get(k)])),
+      // The existing Meta ads use utm_ad for the creative name.
+      utm_content: params.get("utm_content") ?? params.get("utm_ad"),
       referrer: document.referrer || null,
       landing_url: window.location.href,
     };
@@ -144,6 +147,7 @@ export default function LeadForm() {
         call_consent: callConsent,
         step_completed: 3,
       });
+      trackLead();
       setDone(true);
     } catch {
       setError("Something went wrong submitting. Mind trying again?");
@@ -163,8 +167,9 @@ export default function LeadForm() {
           Thank you, <span className="gold-text font-medium">{fullName.split(" ")[0] || "friend"}</span>.
         </h3>
         <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed font-light text-bone/65">
-          A member of the SK Home Solutions team will call you shortly
-          with next steps and your cash offer.
+          {callConsent
+            ? "Steven’s assistant will get in touch shortly to learn more about your property. Steven will review the details and follow up about next steps."
+            : "Steven’s team received your request and will review the property details before following up about next steps."}
         </p>
       </div>
     );
@@ -360,7 +365,7 @@ export default function LeadForm() {
           <div className="flex gap-2">
             <button type="button" onClick={() => setStep(2)} className={back}>Back</button>
             <button type="button" disabled={submitting} onClick={submitFinal} className={primary}>
-              {submitting ? "Submitting…" : "Get my cash offer"}
+              {submitting ? "Submitting…" : "Request my cash offer"}
             </button>
           </div>
         </div>
