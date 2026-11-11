@@ -9,9 +9,9 @@ const TRUST_ITEMS = [
 ];
 
 const STEPS = [
-  { n: "I", title: "Tell us", body: "Two minutes, right here." },
-  { n: "II", title: "We call", body: "A real person, not a call center." },
-  { n: "III", title: "Cash offer", body: "No obligation. Your call." },
+  { n: "01", title: "Tell us", body: "Two minutes, right here." },
+  { n: "02", title: "We call", body: "A real person, not a call center." },
+  { n: "03", title: "Cash offer", body: "No obligation. Your call." },
 ];
 
 export default function Home() {
@@ -58,7 +58,7 @@ export default function Home() {
               priority
             />
             <div className="leading-none">
-              <p className="font-display text-[13px] tracking-[0.26em] text-bone uppercase sm:text-base">
+              <p className="font-display text-[13px] font-medium tracking-[0.3em] text-bone uppercase sm:text-[15px]">
                 SK Home Solutions
               </p>
               <p className="mt-1.5 text-[9px] font-medium tracking-[0.42em] text-gold-light/70 uppercase">
@@ -84,10 +84,10 @@ export default function Home() {
               </p>
             </div>
 
-            <h1 className="font-display text-[2.35rem] leading-[0.98] tracking-[-0.02em] text-bone sm:mt-7 sm:text-6xl lg:text-[4.6rem] xl:text-[5.4rem] short:lg:text-[3.9rem] short:xl:text-[4.4rem]">
+            <h1 className="font-display text-[2.35rem] leading-[1.02] font-light tracking-[-0.03em] text-bone sm:mt-7 sm:text-6xl lg:text-[4.6rem] xl:text-[5.4rem] short:lg:text-[3.9rem] short:xl:text-[4.4rem]">
               Sell your home
               <br />
-              on <span className="gold-text italic">your</span> terms.
+              on <span className="gold-text font-medium">your</span> terms.
             </h1>
 
             <p className="mt-5 hidden max-w-md text-[15px] leading-relaxed font-light text-bone/60 sm:block lg:mt-7 short:lg:mt-5">
@@ -99,7 +99,7 @@ export default function Home() {
             <ol className="mt-10 hidden max-w-lg grid-cols-3 gap-6 border-t border-bone/10 pt-7 lg:grid short:lg:mt-7 short:lg:pt-5">
               {STEPS.map((s) => (
                 <li key={s.n}>
-                  <span className="font-display text-xl text-gold-light/80 italic">{s.n}</span>
+                  <span className="font-display text-xl font-light text-gold-light/80">{s.n}</span>
                   <p className="mt-1.5 text-[11px] font-semibold tracking-[0.22em] text-bone uppercase">
                     {s.title}
                   </p>

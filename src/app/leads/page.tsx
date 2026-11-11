@@ -269,6 +269,44 @@ async function LeadsView({ searchParams }: { searchParams: Promise<Search> }) {
                   <NotesField id={l.id} notes={l.notes} />
                 </div>
               </div>
+
+              {done && (
+                <div className="mt-5 border-t border-bone/10 pt-4 text-sm">
+                  <p className="text-[11px] tracking-[0.2em] text-bone/35 uppercase">
+                    AI call
+                  </p>
+                  {!l.call_consent ? (
+                    <p className="mt-1.5 text-bone/45">
+                      Didn&rsquo;t check the call box, so no automatic call. Follow up by hand.
+                    </p>
+                  ) : (
+                    <div className="mt-1.5 space-y-1.5">
+                      <p className="text-bone/70">
+                        Status: {l.call_status ?? "queued"}
+                        {l.call_successful === true && " · goal reached"}
+                        {l.call_successful === false && " · goal not reached"}
+                        {l.call_recording_url && (
+                          <>
+                            {" · "}
+                            <a href={l.call_recording_url} target="_blank" rel="noreferrer" className="text-gold-light hover:underline">
+                              Recording
+                            </a>
+                          </>
+                        )}
+                      </p>
+                      {l.call_summary && <p className="text-bone/55">{l.call_summary}</p>}
+                      {l.call_error && <p className="text-red-300/80">Call error: {l.call_error}</p>}
+                    </div>
+                  )}
+                  <p className="mt-1.5 text-xs text-bone/35">
+                    {l.crm_lead_id
+                      ? `In Steven's CRM (${l.crm_lead_id})`
+                      : l.crm_error
+                        ? `CRM sync failed: ${l.crm_error}`
+                        : "Not in the CRM yet"}
+                  </p>
+                </div>
+              )}
             </li>
           );
         })}

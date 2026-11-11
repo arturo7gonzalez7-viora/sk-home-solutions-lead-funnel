@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import "@fontsource/bodoni-moda/latin-400.css";
-import "@fontsource/bodoni-moda/latin-500.css";
-import "@fontsource/bodoni-moda/latin-400-italic.css";
-import "@fontsource/bodoni-moda/latin-500-italic.css";
+import "@fontsource/outfit/latin-300.css";
+import "@fontsource/outfit/latin-400.css";
+import "@fontsource/outfit/latin-500.css";
+import "@fontsource/outfit/latin-600.css";
 import "@fontsource/manrope/latin-300.css";
 import "@fontsource/manrope/latin-400.css";
 import "@fontsource/manrope/latin-500.css";

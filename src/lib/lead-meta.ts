@@ -9,6 +9,12 @@ export const STATUSES = [
   { value: "dead", label: "Dead" },
 ] as const;
 
+// Shown next to the call-permission checkbox and stored word-for-word with
+// each lead that checks it. If you change the wording, old leads keep the
+// version they actually agreed to.
+export const CONSENT_TEXT =
+  "I agree that SK Home Solutions may call and text me at the number above about my property and a cash offer, including calls made with automated technology and an AI or prerecorded voice. Consent is not required to sell your home. Msg & data rates may apply. Reply STOP to opt out.";
+
 export type LeadStatus = (typeof STATUSES)[number]["value"];
 
 export const CONDITION_LABELS: Record<string, string> = {
@@ -52,6 +58,15 @@ export type Lead = {
   referrer: string | null;
   landing_url: string | null;
   notes: string | null;
+  call_consent?: boolean;
+  retell_call_id?: string | null;
+  call_status?: string | null;
+  call_error?: string | null;
+  call_summary?: string | null;
+  call_successful?: boolean | null;
+  call_recording_url?: string | null;
+  crm_lead_id?: string | null;
+  crm_error?: string | null;
 };
 
 // "Complete" = they reached the contact step and gave a phone number.

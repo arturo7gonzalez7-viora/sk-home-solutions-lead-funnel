@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { ensureSchema, getSql } from "@/lib/db";
+import { CONSENT_TEXT } from "@/lib/lead-meta";
+import { finalizeLead } from "@/lib/lead-pipeline";
 
 const clip = (v: unknown, max = 500) =>
   typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
@@ -34,6 +36,30 @@ export async function POST(req: NextRequest) {
     const phone = clip(body.phone, 40);
     const email = clip(body.email, 200);
     const step_completed = Math.min(Math.max(Number(body.step_completed) || 1, 1), 3);
+    const isFinal = step_completed === 3 && !!phone;
+    const callConsent = isFinal && body.call_consent === true;
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+    const userAgent = req.headers.get("user-agent")?.slice(0, 500) ?? null;
+
+    // Final submit: record call consent (word-for-word) and kick off the CRM
+    // push + AI call after the response is sent, so the visitor never waits.
+    const finish = async (leadId: string) => {
+      if (isFinal) {
+        if (callConsent) {
+          await sql`
+            update leads set
+              call_consent = true,
+              consent_text = ${CONSENT_TEXT},
+              consent_at = now(),
+              consent_ip = ${ip},
+              consent_user_agent = ${userAgent}
+            where id = ${leadId} and call_consent = false
+          `;
+        }
+        after(() => finalizeLead(leadId));
+      }
+      return NextResponse.json({ id: leadId });
+    };
 
     if (id) {
       const [row] = await sql`
@@ -54,7 +80,7 @@ export async function POST(req: NextRequest) {
         where id = ${id}
         returning id;
       `;
-      if (row) return NextResponse.json({ id: row.id });
+      if (row) return finish(row.id);
       // Unknown id (e.g. stale tab): fall through and create a fresh lead.
     }
 
@@ -85,7 +111,7 @@ export async function POST(req: NextRequest) {
       )
       returning id;
     `;
-    return NextResponse.json({ id: row.id });
+    return finish(row.id);
   } catch (err) {
     console.error("lead save failed", err);
     return NextResponse.json({ error: "save_failed" }, { status: 500 });

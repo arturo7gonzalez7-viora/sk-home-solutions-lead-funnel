@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CONSENT_TEXT } from "@/lib/lead-meta";
 
 type Condition =
   | "move_in_ready"
@@ -106,6 +107,7 @@ export default function LeadForm() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [callConsent, setCallConsent] = useState(false);
 
   const advance = async (nextStep: number, extra: Record<string, unknown>) => {
     setError(null);
@@ -139,6 +141,7 @@ export default function LeadForm() {
         full_name: fullName,
         phone,
         email,
+        call_consent: callConsent,
         step_completed: 3,
       });
       setDone(true);
@@ -156,8 +159,8 @@ export default function LeadForm() {
         <p className="text-[10px] font-semibold tracking-[0.45em] text-gold-light uppercase">
           You&rsquo;re all set
         </p>
-        <h3 className="font-display mt-5 text-4xl text-bone sm:text-5xl">
-          Thank you, <span className="gold-text italic">{fullName.split(" ")[0] || "friend"}</span>.
+        <h3 className="font-display mt-5 text-4xl font-light tracking-[-0.02em] text-bone sm:text-5xl">
+          Thank you, <span className="gold-text font-medium">{fullName.split(" ")[0] || "friend"}</span>.
         </h3>
         <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed font-light text-bone/65">
           A member of the SK Home Solutions team will call you shortly
@@ -192,10 +195,10 @@ export default function LeadForm() {
       {/* Header + progress */}
       <div className="mb-5 sm:mb-7 short:mb-5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[1.5rem] leading-none text-bone sm:text-3xl">
-            {step === 1 && <>The <span className="italic text-gold-light">property</span></>}
-            {step === 2 && <>Your <span className="italic text-gold-light">timeline</span></>}
-            {step === 3 && <>Where to <span className="italic text-gold-light">reach you</span></>}
+          <h2 className="font-display text-[1.5rem] leading-none font-light tracking-[-0.01em] text-bone sm:text-3xl">
+            {step === 1 && <>The <span className="font-medium text-gold-light">property</span></>}
+            {step === 2 && <>Your <span className="font-medium text-gold-light">timeline</span></>}
+            {step === 3 && <>Where to <span className="font-medium text-gold-light">reach you</span></>}
           </h2>
           <p className="text-[10px] font-semibold tracking-[0.35em] text-bone/40 uppercase">
             <span className="text-gold-light">0{step}</span> / 03
@@ -329,10 +332,30 @@ export default function LeadForm() {
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@email.com" type="email" autoComplete="email" className="field" />
             </div>
           </div>
-          <p className="text-[11px] leading-relaxed text-bone/35">
-            By submitting, you agree to be contacted by SK Home Solutions
-            about your property by phone, text, or email.
-          </p>
+          <label className="flex cursor-pointer items-start gap-3 select-none">
+            <input
+              type="checkbox"
+              checked={callConsent}
+              onChange={(e) => setCallConsent(e.target.checked)}
+              className="peer sr-only"
+            />
+            <span
+              aria-hidden
+              className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center border transition-colors peer-focus-visible:ring-1 peer-focus-visible:ring-gold-light ${
+                callConsent ? "border-gold-light bg-gold-light" : "border-bone/30"
+              }`}
+            >
+              {callConsent && (
+                <svg viewBox="0 0 12 12" className="h-3 w-3 text-eclipse">
+                  <path d="M2.5 6.2 5 8.5l4.5-5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+              )}
+            </span>
+            <span className="text-[11px] leading-relaxed text-bone/55">
+              <span className="font-semibold text-bone/85">Yes, call me about my cash offer. </span>
+              {CONSENT_TEXT}
+            </span>
+          </label>
           {error && <p className="text-sm text-red-300">{error}</p>}
           <div className="flex gap-2">
             <button type="button" onClick={() => setStep(2)} className={back}>Back</button>

@@ -30,7 +30,7 @@
   --color-walnut-dim: var(--walnut-dim);
   --color-eclipse: var(--eclipse);
   --color-eclipse-deep: var(--eclipse-deep);
-  --font-display: "Bodoni Moda", "Didot", "Times New Roman", serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 

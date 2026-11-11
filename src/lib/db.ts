@@ -44,6 +44,30 @@ async function migrate() {
       add column if not exists landing_url text,
       add column if not exists notes text
   `;
+  // Call consent + Retell AI call + CRM sync tracking.
+  await sql`
+    alter table leads
+      add column if not exists call_consent boolean not null default false,
+      add column if not exists consent_text text,
+      add column if not exists consent_at timestamptz,
+      add column if not exists consent_ip text,
+      add column if not exists consent_user_agent text,
+      add column if not exists call_requested_at timestamptz,
+      add column if not exists retell_call_id text,
+      add column if not exists call_status text,
+      add column if not exists call_error text,
+      add column if not exists call_ended_reason text,
+      add column if not exists call_summary text,
+      add column if not exists call_successful boolean,
+      add column if not exists call_sentiment text,
+      add column if not exists call_analysis jsonb,
+      add column if not exists call_transcript text,
+      add column if not exists call_recording_url text,
+      add column if not exists crm_lead_id text,
+      add column if not exists crm_synced_at timestamptz,
+      add column if not exists crm_call_synced_at timestamptz,
+      add column if not exists crm_error text
+  `;
   await sql`create index if not exists leads_created_at_idx on leads (created_at desc)`;
   await sql`create index if not exists leads_status_idx on leads (status)`;
 }
