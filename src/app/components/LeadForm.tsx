@@ -151,14 +151,15 @@ export default function LeadForm() {
 
   if (done) {
     return (
-      <div className="rounded-2xl border border-gold-deep/40 bg-walnut/60 p-8 text-center sm:p-12">
-        <p className="text-xs font-medium tracking-[0.4em] text-gold-light uppercase">
+      <div className="relative border border-gold/30 bg-eclipse/55 px-8 py-14 text-center backdrop-blur-md sm:px-12">
+        <span className="gold-rule absolute inset-x-0 top-0 h-px" />
+        <p className="text-[10px] font-semibold tracking-[0.45em] text-gold-light uppercase">
           You&rsquo;re all set
         </p>
-        <h3 className="font-display mt-4 text-3xl text-bone sm:text-4xl">
-          Thanks, {fullName.split(" ")[0] || "there"}.
+        <h3 className="font-display mt-5 text-4xl text-bone sm:text-5xl">
+          Thank you, <span className="gold-text italic">{fullName.split(" ")[0] || "friend"}</span>.
         </h3>
-        <p className="mx-auto mt-3 max-w-sm text-sm text-bone/70">
+        <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed font-light text-bone/65">
           A member of the SK Home Solutions team will call you shortly
           with next steps and your cash offer.
         </p>
@@ -166,259 +167,177 @@ export default function LeadForm() {
     );
   }
 
+  const label =
+    "block text-[10px] font-semibold tracking-[0.3em] text-bone/50 uppercase";
+  const optional = (
+    <span className="ml-1 font-normal tracking-[0.15em] text-bone/30 normal-case">
+      optional
+    </span>
+  );
+  const choice = (selected: boolean) =>
+    `group relative border px-3.5 py-2.5 text-left sm:px-4 sm:py-3 transition-all duration-200 short:py-2.5 ${
+      selected
+        ? "border-gold-light/80 bg-gold/[0.09]"
+        : "border-bone/12 hover:border-bone/30 hover:bg-bone/[0.02]"
+    }`;
+  const primary =
+    "btn-gold flex-1 py-3.5 sm:py-4 text-[11px] font-bold tracking-[0.32em] text-eclipse uppercase disabled:cursor-not-allowed disabled:opacity-35 short:py-3.5";
+  const back =
+    "border border-bone/15 px-5 text-[11px] font-semibold tracking-[0.25em] text-bone/60 uppercase transition-colors hover:border-bone/35 hover:text-bone";
+
   return (
-    <div className="rounded-2xl border border-bone/10 bg-walnut/60 p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)] backdrop-blur sm:p-8">
-      {/* step indicator */}
-      <div className="mb-8 flex items-center gap-3">
-        {STEP_LABELS.map((label, i) => {
-          const n = i + 1;
-          const active = n === step;
-          const complete = n < step;
-          return (
-            <div key={label} className="flex flex-1 items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-                    complete
-                      ? "bg-gold text-eclipse"
-                      : active
-                      ? "border border-gold text-gold-light"
-                      : "border border-bone/20 text-bone/40"
-                  }`}
-                >
-                  {n}
-                </span>
-                <span
-                  className={`hidden text-xs tracking-wide uppercase sm:inline ${
-                    active ? "text-bone" : "text-bone/40"
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
-              {n < STEP_LABELS.length && (
-                <span className="h-px flex-1 bg-bone/10" />
-              )}
-            </div>
-          );
-        })}
+    <div className="relative border border-bone/10 bg-eclipse/55 px-5 py-6 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)] backdrop-blur-md sm:px-9 sm:py-9 short:sm:py-7">
+      <span className="gold-rule absolute inset-x-0 top-0 h-px" />
+
+      {/* Header + progress */}
+      <div className="mb-5 sm:mb-7 short:mb-5">
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-[1.5rem] leading-none text-bone sm:text-3xl">
+            {step === 1 && <>The <span className="italic text-gold-light">property</span></>}
+            {step === 2 && <>Your <span className="italic text-gold-light">timeline</span></>}
+            {step === 3 && <>Where to <span className="italic text-gold-light">reach you</span></>}
+          </h2>
+          <p className="text-[10px] font-semibold tracking-[0.35em] text-bone/40 uppercase">
+            <span className="text-gold-light">0{step}</span> / 03
+          </p>
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-1.5 sm:mt-5">
+          {STEP_LABELS.map((l, i) => (
+            <span
+              key={l}
+              className={`h-[2px] transition-colors duration-500 ${
+                i + 1 <= step ? "bg-gold-light" : "bg-bone/10"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       {step === 1 && (
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5 short:space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs tracking-wide text-bone/60 uppercase">
-              Property address
-            </label>
+            <label className={label}>Property address</label>
             <input
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="123 Main St"
-              className="w-full rounded-lg border border-bone/15 bg-eclipse/60 px-4 py-3 text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
+              autoComplete="street-address"
+              className="field"
             />
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <input
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="City"
-              className="col-span-1 rounded-lg border border-bone/15 bg-eclipse/60 px-3 py-3 text-sm text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-            />
-            <input
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              placeholder="State"
-              className="col-span-1 rounded-lg border border-bone/15 bg-eclipse/60 px-3 py-3 text-sm text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-            />
-            <input
-              value={zip}
-              onChange={(e) => setZip(e.target.value)}
-              placeholder="ZIP"
-              className="col-span-1 rounded-lg border border-bone/15 bg-eclipse/60 px-3 py-3 text-sm text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-            />
+          <div className="grid grid-cols-[1.4fr_0.7fr_0.9fr] gap-4">
+            <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" autoComplete="address-level2" className="field" />
+            <input value={state} onChange={(e) => setState(e.target.value)} placeholder="State" autoComplete="address-level1" className="field" />
+            <input value={zip} onChange={(e) => setZip(e.target.value)} placeholder="ZIP" inputMode="numeric" autoComplete="postal-code" className="field" />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs tracking-wide text-bone/60 uppercase">
-              Estimated value{" "}
-              <span className="text-bone/30 normal-case">(optional)</span>
-            </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-bone/40">
-                $
-              </span>
-              <input
-                value={estimatedValue}
-                onChange={(e) =>
-                  setEstimatedValue(e.target.value.replace(/[^0-9]/g, ""))
-                }
-                placeholder="I'm not sure"
-                inputMode="numeric"
-                className="w-full rounded-lg border border-bone/15 bg-eclipse/60 py-3 pr-4 pl-8 text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="mb-2 block text-xs tracking-wide text-bone/60 uppercase">
-              Condition
-            </label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label className={`${label} mb-2.5`}>Condition</label>
+            <div className="grid grid-cols-2 gap-2">
               {CONDITIONS.map((c) => (
-                <button
-                  type="button"
-                  key={c.value}
-                  onClick={() => setCondition(c.value)}
-                  className={`rounded-lg border px-4 py-3 text-left transition-colors ${
-                    condition === c.value
-                      ? "border-gold bg-gold/10"
-                      : "border-bone/15 hover:border-bone/30"
-                  }`}
-                >
-                  <p className="text-sm font-medium text-bone">{c.label}</p>
-                  <p className="mt-0.5 text-xs text-bone/50">{c.blurb}</p>
+                <button type="button" key={c.value} onClick={() => setCondition(c.value)} className={choice(condition === c.value)}>
+                  <p className="text-[12.5px] font-semibold whitespace-nowrap text-bone sm:text-[13px]">{c.label}</p>
+                  <p className="mt-0.5 hidden text-[11px] leading-snug text-bone/45 sm:block short:hidden">{c.blurb}</p>
                 </button>
               ))}
             </div>
           </div>
           {error && <p className="text-sm text-red-300">{error}</p>}
-          <button
-            type="button"
-            disabled={!address || !condition || submitting}
-            onClick={() =>
-              advance(2, {
-                address,
-                city,
-                state,
-                zip,
-                estimated_value: estimatedValue ? Number(estimatedValue) : null,
-                condition,
-              })
-            }
-            className="w-full rounded-lg bg-gradient-to-r from-gold-light via-gold to-gold-deep py-3.5 text-sm font-semibold tracking-wide text-eclipse uppercase transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {submitting ? "Saving..." : "Next: Timeline"}
-          </button>
+          <div className="flex pt-1">
+            <button
+              type="button"
+              disabled={!address || !condition || submitting}
+              onClick={() =>
+                advance(2, { address, city, state, zip, condition })
+              }
+              className={primary}
+            >
+              {submitting ? "Saving…" : "Continue →"}
+            </button>
+          </div>
         </div>
       )}
 
       {step === 2 && (
-        <div className="space-y-5">
+        <div className="space-y-6 short:space-y-5">
           <div>
-            <label className="mb-2 block text-xs tracking-wide text-bone/60 uppercase">
-              How soon do you want to sell?
-            </label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label className={`${label} mb-2.5`}>How soon do you want to sell?</label>
+            <div className="grid grid-cols-2 gap-2">
               {TIMELINES.map((t) => (
-                <button
-                  type="button"
-                  key={t.value}
-                  onClick={() => setTimeline(t.value)}
-                  className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
-                    timeline === t.value
-                      ? "border-gold bg-gold/10 text-bone"
-                      : "border-bone/15 text-bone/80 hover:border-bone/30"
-                  }`}
-                >
-                  {t.label}
+                <button type="button" key={t.value} onClick={() => setTimeline(t.value)} className={choice(timeline === t.value)}>
+                  <p className="text-[12.5px] font-semibold text-bone sm:text-[13px]">{t.label}</p>
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs tracking-wide text-bone/60 uppercase">
-              What&rsquo;s prompting the move?{" "}
-              <span className="text-bone/30 normal-case">(optional)</span>
-            </label>
+            <label className={label}>Estimated value {optional}</label>
+            <div className="relative">
+              <span className="pointer-events-none absolute top-1/2 left-0 -translate-y-1/2 text-bone/40">$</span>
+              <input
+                value={estimatedValue}
+                onChange={(e) => setEstimatedValue(e.target.value.replace(/[^0-9]/g, ""))}
+                placeholder="I'm not sure"
+                inputMode="numeric"
+                className="field pl-4!"
+              />
+            </div>
+          </div>
+          <div>
+            <label className={label}>What&rsquo;s prompting the move? {optional}</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Relocating, inherited property, behind on payments, tired landlord..."
-              rows={3}
-              className="w-full resize-none rounded-lg border border-bone/15 bg-eclipse/60 px-4 py-3 text-sm text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
+              placeholder="Relocating, inherited, behind on payments, tired landlord…"
+              rows={2}
+              className="field resize-none"
             />
           </div>
           {error && <p className="text-sm text-red-300">{error}</p>}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="rounded-lg border border-bone/20 px-5 py-3.5 text-sm text-bone/70 hover:border-bone/40"
-            >
-              Back
-            </button>
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={() => setStep(1)} className={back}>Back</button>
             <button
               type="button"
               disabled={!timeline || submitting}
               onClick={() =>
-                advance(3, { timeline, reason_for_selling: reason })
+                advance(3, {
+                  timeline,
+                  reason_for_selling: reason,
+                  estimated_value: estimatedValue ? Number(estimatedValue) : null,
+                })
               }
-              className="flex-1 rounded-lg bg-gradient-to-r from-gold-light via-gold to-gold-deep py-3.5 text-sm font-semibold tracking-wide text-eclipse uppercase transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              className={primary}
             >
-              {submitting ? "Saving..." : "Next: Contact"}
+              {submitting ? "Saving…" : "Continue →"}
             </button>
           </div>
         </div>
       )}
 
       {step === 3 && (
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5 short:space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs tracking-wide text-bone/60 uppercase">
-              Full name
-            </label>
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Jane Smith"
-              className="w-full rounded-lg border border-bone/15 bg-eclipse/60 px-4 py-3 text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-            />
+            <label className={label}>Full name</label>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Smith" autoComplete="name" className="field" />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs tracking-wide text-bone/60 uppercase">
-                Phone
-              </label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="(303) 555-0123"
-                type="tel"
-                className="w-full rounded-lg border border-bone/15 bg-eclipse/60 px-4 py-3 text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-              />
+              <label className={label}>Phone</label>
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(303) 555-0123" type="tel" autoComplete="tel" className="field" />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs tracking-wide text-bone/60 uppercase">
-                Email{" "}
-                <span className="text-bone/30 normal-case">(optional)</span>
-              </label>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="jane@email.com"
-                type="email"
-                className="w-full rounded-lg border border-bone/15 bg-eclipse/60 px-4 py-3 text-bone placeholder:text-bone/30 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none"
-              />
+              <label className={label}>Email {optional}</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@email.com" type="email" autoComplete="email" className="field" />
             </div>
           </div>
-          <p className="text-xs text-bone/40">
+          <p className="text-[11px] leading-relaxed text-bone/35">
             By submitting, you agree to be contacted by SK Home Solutions
             about your property by phone, text, or email.
           </p>
           {error && <p className="text-sm text-red-300">{error}</p>}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="rounded-lg border border-bone/20 px-5 py-3.5 text-sm text-bone/70 hover:border-bone/40"
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              disabled={submitting}
-              onClick={submitFinal}
-              className="flex-1 rounded-lg bg-gradient-to-r from-gold-light via-gold to-gold-deep py-3.5 text-sm font-semibold tracking-wide text-eclipse uppercase transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {submitting ? "Submitting..." : "Get My Cash Offer"}
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setStep(2)} className={back}>Back</button>
+            <button type="button" disabled={submitting} onClick={submitFinal} className={primary}>
+              {submitting ? "Submitting…" : "Get my cash offer"}
             </button>
           </div>
         </div>

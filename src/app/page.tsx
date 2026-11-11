@@ -9,195 +9,129 @@ const TRUST_ITEMS = [
 ];
 
 const STEPS = [
-  {
-    n: "01",
-    title: "Tell us about the property",
-    body: "Two minutes, right here. Address, condition, and when you want to close.",
-  },
-  {
-    n: "02",
-    title: "We reach out quickly",
-    body: "A real person from SK Home Solutions reviews the details and reaches out directly.",
-  },
-  {
-    n: "03",
-    title: "You get a cash offer",
-    body: "No obligation. Accept it, counter it, or walk away. Your call, every step.",
-  },
-];
-
-const BENEFITS = [
-  {
-    title: "No repairs, ever",
-    body: "We buy homes exactly as they sit. Skip the contractors and the clean-up.",
-  },
-  {
-    title: "No agent, no commission",
-    body: "You keep more of the sale price because there's no listing or agent fee.",
-  },
-  {
-    title: "Pick your closing date",
-    body: "Close in as little as two weeks, or take the time you need to move out.",
-  },
-  {
-    title: "Backed by a real team",
-    body: "SK Home Solutions has closed deals across the Denver metro. This isn't a call center.",
-  },
+  { n: "I", title: "Tell us", body: "Two minutes, right here." },
+  { n: "II", title: "We call", body: "A real person, not a call center." },
+  { n: "III", title: "Cash offer", body: "No obligation. Your call." },
 ];
 
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col font-sans">
+    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden font-sans lg:h-dvh">
+      {/* Atmosphere */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div
+          className="absolute -top-[30%] -left-[15%] h-[85vh] w-[70vw] rounded-full opacity-[0.22] blur-3xl"
+          style={{ background: "radial-gradient(closest-side, var(--gold), transparent)" }}
+        />
+        <div
+          className="absolute -right-[10%] -bottom-[30%] h-[80vh] w-[60vw] rounded-full opacity-60 blur-3xl"
+          style={{ background: "radial-gradient(closest-side, var(--walnut), transparent)" }}
+        />
+        <Image
+          src="/sk-logo.png"
+          alt=""
+          width={719}
+          height={691}
+          className="absolute -bottom-[18%] -left-[6%] hidden w-[46vw] max-w-[760px] opacity-[0.045] lg:block"
+          priority
+        />
+        <div className="grain absolute inset-0" />
+      </div>
+
+      {/* Gallery frame */}
+      <div aria-hidden className="pointer-events-none absolute inset-2.5 border border-gold/15 sm:inset-4">
+        {["-top-px -left-px border-t border-l", "-top-px -right-px border-t border-r", "-bottom-px -left-px border-b border-l", "-bottom-px -right-px border-b border-r"].map((pos) => (
+          <span key={pos} className={`absolute h-4 w-4 border-gold-light/70 ${pos}`} />
+        ))}
+      </div>
+
       {/* Header */}
-      <header className="border-b border-bone/10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
+      <header className="relative z-10 px-6 pt-5 sm:px-12 sm:pt-9 short:sm:pt-7">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-3.5">
             <Image
               src="/sk-logo.png"
               alt="SK Home Solutions"
-              width={34}
-              height={34}
-              className="h-8 w-8 object-contain"
+              width={44}
+              height={42}
+              className="h-8 w-auto object-contain sm:h-10"
               priority
             />
-            <span className="text-xs font-medium tracking-[0.35em] text-bone uppercase">
-              SK Home Solutions
-            </span>
+            <div className="leading-none">
+              <p className="font-display text-[13px] tracking-[0.26em] text-bone uppercase sm:text-base">
+                SK Home Solutions
+              </p>
+              <p className="mt-1.5 text-[9px] font-medium tracking-[0.42em] text-gold-light/70 uppercase">
+                Private home buyers
+              </p>
+            </div>
           </div>
-          <a
-            href="#offer"
-            className="rounded-full border border-gold/50 px-5 py-2 text-[11px] font-medium tracking-[0.3em] text-gold-light uppercase transition-colors hover:border-gold-light hover:bg-gold/10"
-          >
-            Get my offer
-          </a>
+          <p className="hidden text-[10px] font-medium tracking-[0.4em] text-bone/45 uppercase md:block">
+            Denver Metro <span className="mx-2 text-gold/60">&#9670;</span> Colorado
+          </p>
         </div>
       </header>
 
-      {/* Hero */}
-      <main className="relative flex-1 overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full opacity-20 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, var(--gold), transparent)",
-          }}
-        />
-
-        <section className="relative mx-auto max-w-6xl px-6 pt-16 pb-24 sm:pt-24">
-          <div className="grid gap-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-12">
-            {/* Copy column */}
-            <div>
-              <p className="gold-text text-xs font-medium tracking-[0.4em] uppercase">
-                Quick cash offer
+      {/* Main */}
+      <main className="relative z-10 flex flex-1 items-center px-6 py-4 sm:px-12 sm:py-6 lg:min-h-0 lg:py-4">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-5 sm:gap-8 lg:grid-cols-[1.08fr_auto_0.92fr] lg:gap-14 xl:gap-20">
+          {/* Copy */}
+          <section className="rise">
+            <div className="hidden items-center gap-4 sm:flex">
+              <span className="gold-rule h-px w-10" />
+              <p className="text-[10px] font-semibold tracking-[0.45em] text-gold-light uppercase sm:text-[11px]">
+                Your private cash offer
               </p>
-              <h1 className="font-display mt-6 text-5xl leading-[1.02] font-normal tracking-[-0.01em] text-bone sm:text-6xl lg:text-[4.5rem]">
-                Sell your house on{" "}
-                <span className="gold-text italic">your terms</span>, not
-                the market&rsquo;s.
-              </h1>
-              <p className="mt-7 max-w-lg text-base leading-relaxed font-light text-bone/65 sm:text-lg">
-                Answer a few questions about your property. SK Home
-                Solutions reviews it personally and calls you quickly with a
-                real cash offer, with no obligation.
-              </p>
-
-              <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
-                {TRUST_ITEMS.map((item) => (
-                  <div key={item} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
-                    <span className="text-xs leading-snug text-bone/60 sm:text-sm">
-                      {item}
-                    </span>
-                  </div>
-                ))}
-              </dl>
-
-              <div className="gold-rule mt-14 hidden h-px w-full lg:block" />
-
-              <ol className="mt-12 hidden space-y-8 lg:block">
-                {STEPS.map((step) => (
-                  <li key={step.n} className="flex gap-5">
-                    <span className="font-display text-3xl text-gold-light/80 italic">
-                      {step.n}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-bone">
-                        {step.title}
-                      </p>
-                      <p className="mt-1 text-sm text-bone/50">{step.body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
             </div>
 
-            {/* Form column */}
-            <div id="offer" className="scroll-mt-8 lg:sticky lg:top-10">
-              <LeadForm />
-            </div>
-          </div>
+            <h1 className="font-display text-[2.35rem] leading-[0.98] tracking-[-0.02em] text-bone sm:mt-7 sm:text-6xl lg:text-[4.6rem] xl:text-[5.4rem] short:lg:text-[3.9rem] short:xl:text-[4.4rem]">
+              Sell your home
+              <br />
+              on <span className="gold-text italic">your</span> terms.
+            </h1>
 
-          {/* Steps: mobile only, under the form */}
-          <ol className="mt-16 grid gap-6 border-t border-bone/10 pt-12 sm:grid-cols-3 lg:hidden">
-            {STEPS.map((step) => (
-              <li key={step.n}>
-                <span className="font-display text-2xl text-gold-light/80 italic">
-                  {step.n}
-                </span>
-                <p className="mt-2 text-sm font-semibold text-bone">
-                  {step.title}
-                </p>
-                <p className="mt-1 text-sm text-bone/50">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* Benefits */}
-        <section className="border-t border-bone/10 bg-walnut-dim/40">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <p className="gold-text text-xs font-medium tracking-[0.4em] uppercase">
-              Why sellers choose us
+            <p className="mt-5 hidden max-w-md text-[15px] leading-relaxed font-light text-bone/60 sm:block lg:mt-7 short:lg:mt-5">
+              No repairs, no agents, no showings. Tell us about the property
+              and SK Home Solutions comes back with a real cash offer &mdash;
+              personally reviewed, never automated.
             </p>
-            <h2 className="font-display mt-5 max-w-2xl text-4xl leading-[1.08] text-bone sm:text-5xl">
-              A straightforward way to sell, backed by people who close.
-            </h2>
-            <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-              {BENEFITS.map((b) => (
-                <div key={b.title}>
-                  <div className="h-px w-8 bg-gold" />
-                  <p className="mt-4 text-sm font-semibold tracking-wide text-bone uppercase">
-                    {b.title}
+
+            <ol className="mt-10 hidden max-w-lg grid-cols-3 gap-6 border-t border-bone/10 pt-7 lg:grid short:lg:mt-7 short:lg:pt-5">
+              {STEPS.map((s) => (
+                <li key={s.n}>
+                  <span className="font-display text-xl text-gold-light/80 italic">{s.n}</span>
+                  <p className="mt-1.5 text-[11px] font-semibold tracking-[0.22em] text-bone uppercase">
+                    {s.title}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-bone/50">
-                    {b.body}
-                  </p>
-                </div>
+                  <p className="mt-1 text-[12px] leading-snug text-bone/45">{s.body}</p>
+                </li>
               ))}
-            </div>
-          </div>
-        </section>
+            </ol>
+          </section>
+
+          {/* Divider */}
+          <div aria-hidden className="gold-rule-v hidden h-[62%] w-px self-center opacity-60 lg:block" />
+
+          {/* Form */}
+          <section id="offer" className="rise [animation-delay:150ms]">
+            <LeadForm />
+          </section>
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-bone/10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/sk-logo.png"
-              alt="SK Home Solutions"
-              width={24}
-              height={24}
-              className="h-6 w-6 object-contain opacity-80"
-            />
-            <span className="text-xs tracking-wide text-bone/40 uppercase">
-              SK Home Solutions
-            </span>
-          </div>
-          <p className="text-xs text-bone/30">
-            &copy; 2026 SK Home Solutions. Denver
-            metro &amp; surrounding areas.
+      <footer className="relative z-10 px-6 pb-7 sm:px-12 sm:pb-9 short:sm:pb-7">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 border-t border-bone/10 pt-4 sm:flex-row">
+          <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 sm:gap-x-5">
+            {TRUST_ITEMS.map((item, i) => (
+              <li key={item} className="flex items-center gap-5 text-[10px] font-medium tracking-[0.28em] text-bone/55 uppercase">
+                {i > 0 && <span className="hidden text-[7px] text-gold/70 sm:inline">&#9670;</span>}
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="text-[10px] tracking-[0.2em] text-bone/30 uppercase">
+            &copy; 2026 SK Home Solutions
           </p>
         </div>
       </footer>
