@@ -1,5 +1,6 @@
 import Image from "next/image";
 import LeadForm from "./components/LeadForm";
+import MetaPixel from "./components/MetaPixel";
 
 const TRUST_ITEMS = [
   "Any condition",
@@ -10,13 +11,14 @@ const TRUST_ITEMS = [
 
 const STEPS = [
   { n: "01", title: "Tell us", body: "Two minutes, right here." },
-  { n: "02", title: "We call", body: "A real person, not a call center." },
-  { n: "03", title: "Cash offer", body: "No obligation. Your call." },
+  { n: "02", title: "We call", body: "Steven’s assistant gets in touch." },
+  { n: "03", title: "Steven reviews", body: "Discuss your options, no obligation." },
 ];
 
 export default function Home() {
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden font-sans lg:h-dvh">
+      <MetaPixel />
       {/* Atmosphere */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div
@@ -91,9 +93,9 @@ export default function Home() {
             </h1>
 
             <p className="mt-5 hidden max-w-md text-[15px] leading-relaxed font-light text-bone/60 sm:block lg:mt-7 short:lg:mt-5">
-              No repairs, no agents, no showings. Tell us about the property
-              and SK Home Solutions comes back with a real cash offer &mdash;
-              personally reviewed, never automated.
+              No repairs, no agents, no showings. Tell us about the property.
+              Steven&rsquo;s assistant will get in touch, then Steven will review
+              the details and discuss a potential cash offer with you.
             </p>
 
             <ol className="mt-10 hidden max-w-lg grid-cols-3 gap-6 border-t border-bone/10 pt-7 lg:grid short:lg:mt-7 short:lg:pt-5">
