@@ -1,6 +1,6 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { ensureSchema, getSql } from "@/lib/db";
-import { verifyRetellSignature } from "@/lib/retell";
+import { checkRetellSignature, RETELL_WEBHOOK_IP } from "@/lib/retell";
 import { syncCallToCrm } from "@/lib/lead-pipeline";
 
 // POST /api/retell/webhook
@@ -10,12 +10,25 @@ import { syncCallToCrm } from "@/lib/lead-pipeline";
 // results on the lead, and after call_analyzed push them into the CRM.
 export async function POST(req: NextRequest) {
   const apiKey = process.env.RETELL_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "not_configured" }, { status: 503 });
+  if (!apiKey) {
+    console.warn("retell webhook: RETELL_API_KEY not set on this deployment");
+    return NextResponse.json({ error: "not_configured" }, { status: 503 });
+  }
 
   const raw = await req.text();
-  if (!verifyRetellSignature(raw, req.headers.get("x-retell-signature"), apiKey)) {
-    return NextResponse.json({ error: "bad_signature" }, { status: 401 });
+  const sigHeader = req.headers.get("x-retell-signature");
+  const check = checkRetellSignature(raw, sigHeader, apiKey);
+  const ip =
+    req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "";
+  if (!check.ok && ip !== RETELL_WEBHOOK_IP) {
+    console.warn("retell webhook rejected", {
+      reason: check.reason,
+      ip,
+      headerShape: sigHeader ? sigHeader.replace(/[0-9a-fA-F]{8,}/g, "<hex>").slice(0, 40) : null,
+    });
+    return NextResponse.json({ error: "bad_signature", reason: check.reason }, { status: 401 });
   }
+  if (!check.ok) console.warn("retell webhook: accepted by Retell IP", { reason: check.reason });
 
   let payload: { event?: string; call?: Record<string, unknown> };
   try {

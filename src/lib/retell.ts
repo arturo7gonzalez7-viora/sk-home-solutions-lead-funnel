@@ -109,18 +109,51 @@ export async function startRetellCall(lead: LeadForCall): Promise<StartCallResul
   }
 }
 
-// Retell signs each webhook: header "x-retell-signature: v=<ms>,d=<hex>",
-// where d = HMAC-SHA256(rawBody + v) keyed with your API key.
-export function verifyRetellSignature(
+// Retell signs each webhook. Current format:
+//   x-retell-signature: v=<ms>,d=<hex>   d = HMAC-SHA256(rawBody + v, apiKey)
+// Older accounts send a bare hex HMAC-SHA256 of the body. Accept either.
+export type SignatureCheck = { ok: boolean; reason: string };
+
+function safeEqualHex(expected: Buffer, hex: string) {
+  const received = Buffer.from(hex, "hex");
+  return received.length === expected.length && timingSafeEqual(expected, received);
+}
+
+export function checkRetellSignature(
   rawBody: string,
   header: string | null,
   apiKey: string,
-): boolean {
-  const match = /v=(\d+),d=([0-9a-fA-F]+)/.exec(header ?? "");
-  if (!match) return false;
-  const [, timestamp, digest] = match;
-  if (Math.abs(Date.now() - Number(timestamp)) > 5 * 60 * 1000) return false;
-  const expected = createHmac("sha256", apiKey).update(rawBody + timestamp).digest();
-  const received = Buffer.from(digest, "hex");
-  return received.length === expected.length && timingSafeEqual(expected, received);
+): SignatureCheck {
+  if (!header) return { ok: false, reason: "missing_signature_header" };
+  const v2 = /v=(\d+),d=([0-9a-fA-F]+)/.exec(header);
+  if (v2) {
+    const [, timestamp, digest] = v2;
+    if (Math.abs(Date.now() - Number(timestamp)) > 5 * 60 * 1000) {
+      return { ok: false, reason: "stale_timestamp" };
+    }
+    const expected = createHmac("sha256", apiKey).update(rawBody + timestamp).digest();
+    return safeEqualHex(expected, digest)
+      ? { ok: true, reason: "v2" }
+      : { ok: false, reason: "v2_mismatch_wrong_key?" };
+  }
+  const bare = header.trim();
+  if (/^[0-9a-fA-F]{64}$/.test(bare)) {
+    const candidates = [rawBody];
+    try {
+      candidates.push(JSON.stringify(JSON.parse(rawBody)));
+    } catch {}
+    for (const body of candidates) {
+      const expected = createHmac("sha256", apiKey).update(body).digest();
+      if (safeEqualHex(expected, bare)) return { ok: true, reason: "legacy" };
+    }
+    return { ok: false, reason: "legacy_mismatch_wrong_key?" };
+  }
+  return { ok: false, reason: "unknown_signature_format" };
 }
+
+export function verifyRetellSignature(rawBody: string, header: string | null, apiKey: string) {
+  return checkRetellSignature(rawBody, header, apiKey).ok;
+}
+
+// Retell's published webhook source IP (docs: "allowlist the Retell IP").
+export const RETELL_WEBHOOK_IP = "100.20.5.228";
