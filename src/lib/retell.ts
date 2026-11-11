@@ -46,6 +46,12 @@ export function callVariables(lead: LeadForCall): Record<string, string> {
     .join(", ");
   const value = Number(lead.estimated_value);
   return {
+    // Match the exact variable names configured in the live Retell agent.
+    lead_id: lead.id,
+    homeowner_name: lead.full_name ?? "",
+    property_condition: lead.condition ? (CONDITION_LABELS[lead.condition] ?? lead.condition) : "",
+    selling_timeline: lead.timeline ? (TIMELINE_LABELS[lead.timeline] ?? lead.timeline) : "",
+    selling_reason: lead.reason_for_selling ?? "",
     first_name: first,
     full_name: lead.full_name ?? "",
     phone: lead.phone ?? "",
