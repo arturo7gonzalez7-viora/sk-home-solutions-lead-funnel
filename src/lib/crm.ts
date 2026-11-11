@@ -9,6 +9,7 @@
 // Env vars (Vercel project settings):
 //   CRM_DATABASE_URL  – connection string of the CRM's Neon database
 //   CRM_ASSIGN_TO     – optional CRM user id to assign new leads to (e.g. u_steven)
+//   CRM_URL           – optional, defaults to https://steven-crm.vercel.app (used for the new-lead email)
 import { neon } from "@neondatabase/serverless";
 import { CONDITION_LABELS, TIMELINE_LABELS } from "./lead-meta";
 
@@ -224,4 +225,21 @@ export async function addCallToCrm(crmLeadId: string, call: CallInfo): Promise<v
       score = ${score(situation, timeline, condition)}
     where id = ${crmLeadId}
   `;
+}
+
+// Asks the CRM to email Steven about a lead it just received. The CRM sends it
+// at most once per lead, so retries are safe. Never throws.
+export async function notifyCrmNewLead(crmLeadId: string): Promise<void> {
+  const base = (process.env.CRM_URL ?? "https://steven-crm.vercel.app").replace(/\/$/, "");
+  try {
+    const res = await fetch(`${base}/api/lead-alert`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead_id: crmLeadId }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) console.error("CRM lead alert failed", res.status, await res.text().catch(() => ""));
+  } catch (err) {
+    console.error("CRM lead alert failed", err);
+  }
 }

@@ -1,10 +1,10 @@
 // What happens after someone hits "Get my cash offer":
-//  1. the lead is created in Steven's CRM
+//  1. the lead is created in Steven's CRM, and Steven gets an email about it
 //  2. if they checked the call box, the Retell AI agent calls them right away
 // Each step is guarded in the database so a double-click or retry never
 // creates two CRM leads or dials twice.
 import { getSql } from "./db";
-import { pushLeadToCrm, addCallToCrm } from "./crm";
+import { pushLeadToCrm, addCallToCrm, notifyCrmNewLead } from "./crm";
 import { startRetellCall } from "./retell";
 
 type Row = Record<string, unknown> & { id: string };
@@ -22,6 +22,8 @@ export async function finalizeLead(id: string) {
     try {
       const crmId = await pushLeadToCrm(crmClaim as never);
       await sql`update leads set crm_lead_id = ${crmId}, crm_error = null where id = ${id}`;
+      // Email Steven about the new lead (sent by the CRM, once per lead)
+      if (crmId) await notifyCrmNewLead(crmId);
     } catch (err) {
       console.error("CRM push failed", err);
       await sql`update leads set crm_error = ${String(err).slice(0, 500)} where id = ${id}`;
