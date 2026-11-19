@@ -1,6 +1,8 @@
 // What happens after someone hits "Get my cash offer":
-//  1. the lead is created in Steven's CRM, and Steven gets an email about it
+//  1. the lead is created in Steven's CRM
 //  2. if they checked the call box, the Retell AI agent calls them right away
+//  3. Steven gets one email about the lead: after the AI call is analyzed (so it
+//     carries the summary and callback time), or right away when there is no call
 // Each step is guarded in the database so a double-click or retry never
 // creates two CRM leads or dials twice.
 import { getSql } from "./db";
@@ -22,8 +24,8 @@ export async function finalizeLead(id: string) {
     try {
       const crmId = await pushLeadToCrm(crmClaim as never);
       await sql`update leads set crm_lead_id = ${crmId}, crm_error = null where id = ${id}`;
-      // Email Steven about the new lead (sent by the CRM, once per lead)
-      if (crmId) await notifyCrmNewLead(crmId);
+      // No AI call coming: email Steven now. With a call, the email waits for the results.
+      if (crmId && !crmClaim.call_consent) await notifyCrmNewLead(crmId);
     } catch (err) {
       console.error("CRM push failed", err);
       await sql`update leads set crm_error = ${String(err).slice(0, 500)} where id = ${id}`;
@@ -46,6 +48,9 @@ export async function finalizeLead(id: string) {
     } else {
       console.error("Retell call failed", result.error);
       await sql`update leads set call_status = 'failed', call_error = ${result.error} where id = ${id}`;
+      // The call never happened, so don't wait for results: email Steven now
+      const [row] = (await sql`select crm_lead_id from leads where id = ${id}`) as { crm_lead_id: string | null }[];
+      if (row?.crm_lead_id) await notifyCrmNewLead(row.crm_lead_id);
     }
   }
 }
@@ -80,11 +85,12 @@ export async function syncCallToCrm(id: string, call: Parameters<typeof addCallT
       crmId = await pushLeadToCrm(claim as never);
       if (!crmId) throw new Error("CRM lead push returned no id");
       await sql`update leads set crm_lead_id = ${crmId}, crm_error = null where id = ${id}`;
-      await notifyCrmNewLead(crmId);
     }
 
     await addCallToCrm(crmId, call);
     await sql`update leads set crm_call_synced_at = now(), crm_error = null where id = ${id}`;
+    // Email Steven now that the call summary is on the lead (the CRM sends once per lead)
+    await notifyCrmNewLead(crmId);
     return true;
   } catch (err) {
     console.error("CRM call sync failed", err);
