@@ -13,7 +13,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "SK Home Solutions | Sell Your House for Cash",
   description:
-    "Get a quick, no obligation cash offer on your home. Any condition, any timeline, no fees, no showings. Tell us about your property and SK Home Solutions handles the rest.",
+    "Get a quick, no obligation cash offer on your home. Any condition, any timeline, no fees, no hassle. Tell us about your property and SK Home Solutions handles the rest.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

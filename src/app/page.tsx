@@ -5,7 +5,7 @@ import MetaPixel from "./components/MetaPixel";
 const TRUST_ITEMS = [
   "Any condition",
   "No fees or commissions",
-  "No showings",
+  "No hassle",
   "Close on your timeline",
 ];
 
@@ -93,7 +93,7 @@ export default function Home() {
             </h1>
 
             <p className="mt-5 hidden max-w-md text-[15px] leading-relaxed font-light text-bone/60 sm:block lg:mt-7 short:lg:mt-5">
-              No repairs, no agents, no showings. Tell us about the property.
+              No repairs, no agents, no hassle. Tell us about the property.
               Steven&rsquo;s assistant will get in touch, then Steven will review
               the details and discuss a potential cash offer with you.
             </p>
