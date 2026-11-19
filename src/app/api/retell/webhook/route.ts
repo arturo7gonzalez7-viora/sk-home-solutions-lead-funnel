@@ -1,4 +1,4 @@
-import { after, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema, getSql } from "@/lib/db";
 import { checkRetellSignature } from "@/lib/retell";
 import { syncCallToCrm } from "@/lib/lead-pipeline";
@@ -73,7 +73,9 @@ export async function POST(req: NextRequest) {
         updated_at = now()
       where id = ${leadId}
     `;
-    after(() => syncCallToCrm(leadId, call as never));
+    // Done before replying so a failure returns 500 and Retell retries.
+    const synced = await syncCallToCrm(leadId, call as never);
+    if (!synced) return NextResponse.json({ error: "crm_sync_failed" }, { status: 500 });
   }
 
   return new NextResponse(null, { status: 204 });

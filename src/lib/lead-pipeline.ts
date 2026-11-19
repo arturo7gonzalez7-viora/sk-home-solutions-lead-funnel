@@ -50,22 +50,48 @@ export async function finalizeLead(id: string) {
   }
 }
 
-// After Retell finishes analyzing the call: send the results to the CRM once.
+// After Retell finishes analyzing the call: put the results on the CRM lead.
+// If the lead never reached the CRM (say the first push failed), push it now
+// so the call isn't lost. Returns false on failure so the webhook can ask
+// Retell to retry; repeating it for the same call never duplicates the note.
 export async function syncCallToCrm(id: string, call: Parameters<typeof addCallToCrm>[1]) {
   const sql = getSql();
-  const [claim] = (await sql`
-    update leads set crm_call_synced_at = now()
-    where id = ${id} and crm_call_synced_at is null and crm_lead_id is not null
-    returning crm_lead_id
-  `) as { crm_lead_id: string }[];
-  if (!claim) return;
+  if (!process.env.CRM_DATABASE_URL) {
+    console.error("CRM call sync skipped: CRM_DATABASE_URL not set");
+    await sql`update leads set crm_error = 'CRM_DATABASE_URL not set' where id = ${id}`;
+    return true; // retrying can't fix missing config
+  }
   try {
-    await addCallToCrm(claim.crm_lead_id, call);
+    const [lead] = (await sql`select crm_lead_id from leads where id = ${id}`) as {
+      crm_lead_id: string | null;
+    }[];
+    if (!lead) return true;
+
+    let crmId = lead.crm_lead_id;
+    if (!crmId) {
+      const [claim] = (await sql`
+        update leads set crm_synced_at = now()
+        where id = ${id} and crm_lead_id is null
+          and (crm_synced_at is null or crm_error is not null
+               or crm_synced_at < now() - interval '2 minutes')
+        returning *
+      `) as Row[];
+      if (!claim) throw new Error("CRM lead push still in progress");
+      crmId = await pushLeadToCrm(claim as never);
+      if (!crmId) throw new Error("CRM lead push returned no id");
+      await sql`update leads set crm_lead_id = ${crmId}, crm_error = null where id = ${id}`;
+      await notifyCrmNewLead(crmId);
+    }
+
+    await addCallToCrm(crmId, call);
+    await sql`update leads set crm_call_synced_at = now(), crm_error = null where id = ${id}`;
+    return true;
   } catch (err) {
     console.error("CRM call sync failed", err);
     await sql`
-      update leads set crm_call_synced_at = null, crm_error = ${String(err).slice(0, 500)}
+      update leads set crm_call_synced_at = null, crm_error = ${`call sync: ${String(err)}`.slice(0, 500)}
       where id = ${id}
-    `;
+    `.catch(() => {});
+    return false;
   }
 }
