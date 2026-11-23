@@ -16,6 +16,11 @@
   --walnut-dim: #221a15;
   --eclipse: #141212;
   --eclipse-deep: #0c0b0b;
+  /* Landing page (light) */
+  --ink: #16181d;
+  --brand: #8f6631;
+  --brand-dark: #6f4e24;
+  --brand-tint: #fbf5ea;
 }
 
 @theme inline {
@@ -30,13 +35,17 @@
   --color-walnut-dim: var(--walnut-dim);
   --color-eclipse: var(--eclipse);
   --color-eclipse-deep: var(--eclipse-deep);
+  --color-ink: var(--ink);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-tint: var(--brand-tint);
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--eclipse-deep);
-  color: var(--bone);
+  background: #fff;
+  color: var(--ink);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
@@ -107,6 +116,20 @@ body {
 }
 
 ::selection {
-  background: var(--gold);
+  background: var(--gold-light);
   color: var(--eclipse);
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.nudge {
+  animation: nudge 0.45s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nudge { animation: none; }
 }

@@ -1,48 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CONSENT_TEXT } from "@/lib/lead-meta";
 import { trackLead } from "@/lib/meta-pixel";
-
-type Condition =
-  | "move_in_ready"
-  | "clean_working"
-  | "needs_some_work"
-  | "needs_major_work";
-
-type Timeline = "asap" | "30_days" | "90_days" | "just_looking";
-
-const CONDITIONS: { value: Condition; label: string; blurb: string }[] = [
-  {
-    value: "move_in_ready",
-    label: "Move-in ready",
-    blurb: "Clean and working. Could list it today.",
-  },
-  {
-    value: "clean_working",
-    label: "Clean, dated",
-    blurb: "Everything works, but it's a bit behind the times.",
-  },
-  {
-    value: "needs_some_work",
-    label: "Needs some work",
-    blurb: "Kitchen, bath, roof, or HVAC due soon.",
-  },
-  {
-    value: "needs_major_work",
-    label: "Needs major work",
-    blurb: "Damage, gutted, foundation or code issues.",
-  },
-];
-
-const TIMELINES: { value: Timeline; label: string }[] = [
-  { value: "asap", label: "As soon as possible" },
-  { value: "30_days", label: "Within 30 days" },
-  { value: "90_days", label: "Within 90 days" },
-  { value: "just_looking", label: "Just exploring options" },
-];
-
-const STEP_LABELS = ["Property", "Timeline", "Contact"];
 
 const TRACKING_KEYS = [
   "utm_source",
@@ -92,284 +52,209 @@ async function saveLead(payload: Record<string, unknown>) {
   return res.json() as Promise<{ id: string }>;
 }
 
-export default function LeadForm() {
-  const [step, setStep] = useState(1);
-  const [leadId, setLeadId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const digits = (s: string) => s.replace(/\D/g, "");
 
+const fieldClass =
+  "block w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-3 text-[17px] text-ink placeholder:text-ink/35 transition-colors focus:border-brand focus:outline-none";
+const labelClass = "mb-1.5 block text-[15px] font-bold text-ink";
+
+export default function LeadForm() {
   const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [zip, setZip] = useState("");
-  const [estimatedValue, setEstimatedValue] = useState("");
-  const [condition, setCondition] = useState<Condition | "">("");
-  const [timeline, setTimeline] = useState<Timeline | "">("");
-  const [reason, setReason] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [callConsent, setCallConsent] = useState(false);
+  const [remindConsent, setRemindConsent] = useState(false);
+  const [shake, setShake] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const consentRef = useRef<HTMLLabelElement>(null);
 
-  const advance = async (nextStep: number, extra: Record<string, unknown>) => {
+  const submit = async (skipCall = false) => {
     setError(null);
-    setSubmitting(true);
-    try {
-      const { id } = await saveLead({
-        id: leadId ?? undefined,
-        step_completed: step,
-        ...(leadId ? {} : getTracking()),
-        ...extra,
-      });
-      setLeadId(id);
-      setStep(nextStep);
-    } catch {
-      setError("Something went wrong saving that. Mind trying again?");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    if (!address.trim()) return setError("Please enter the property address.");
+    if (!fullName.trim()) return setError("Please enter your name.");
+    const d = digits(phone);
+    if (d.length < 10 || d.length > 11) return setError("Please enter a valid phone number.");
 
-  const submitFinal = async () => {
-    if (!fullName || !phone) {
-      setError("We need your name and phone number to call you back.");
+    // Unchecked call box: point at it once before sending without a call.
+    if (!callConsent && !skipCall && !remindConsent) {
+      setRemindConsent(true);
+      setShake((n) => n + 1);
+      consentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    setError(null);
+
     setSubmitting(true);
     try {
       await saveLead({
-        id: leadId ?? undefined,
-        full_name: fullName,
-        phone,
-        email,
+        ...getTracking(),
+        address: address.trim(),
+        full_name: fullName.trim(),
+        phone: phone.trim(),
         call_consent: callConsent,
         step_completed: 3,
       });
       trackLead();
       setDone(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setError("Something went wrong submitting. Mind trying again?");
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
   if (done) {
+    const first = fullName.trim().split(/\s+/)[0];
     return (
-      <div className="relative border border-gold/30 bg-eclipse/55 px-8 py-14 text-center backdrop-blur-md sm:px-12">
-        <span className="gold-rule absolute inset-x-0 top-0 h-px" />
-        <p className="text-[10px] font-semibold tracking-[0.45em] text-gold-light uppercase">
-          You&rsquo;re all set
-        </p>
-        <h3 className="font-display mt-5 text-4xl font-light tracking-[-0.02em] text-bone sm:text-5xl">
-          Thank you, <span className="gold-text font-medium">{fullName.split(" ")[0] || "friend"}</span>.
-        </h3>
-        <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed font-light text-bone/65">
+      <div className="rounded-2xl border-2 border-brand/30 bg-brand-tint px-6 py-10 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
+          <svg viewBox="0 0 20 20" className="h-7 w-7" aria-hidden>
+            <path d="M4 10.5 8 14.5 16 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <h2 className="mt-5 text-2xl font-extrabold tracking-tight">
+          Thanks{first ? `, ${first}` : ""}! You&rsquo;re all set.
+        </h2>
+        <p className="mx-auto mt-3 max-w-sm text-[17px] leading-snug text-ink/70">
           {callConsent
-            ? "Steven’s assistant will get in touch shortly to learn more about your property. Steven will review the details and follow up about next steps."
-            : "Steven’s team received your request and will review the property details before following up about next steps."}
+            ? "Keep your phone close. We’ll be calling you shortly about your cash offer."
+            : "We got your info. Steven’s team will review your property and reach out soon."}
         </p>
       </div>
     );
   }
 
-  const label =
-    "block text-[10px] font-semibold tracking-[0.3em] text-bone/50 uppercase";
-  const optional = (
-    <span className="ml-1 font-normal tracking-[0.15em] text-bone/30 normal-case">
-      optional
-    </span>
-  );
-  const choice = (selected: boolean) =>
-    `group relative border px-3.5 py-2.5 text-left sm:px-4 sm:py-3 transition-all duration-200 short:py-2.5 ${
-      selected
-        ? "border-gold-light/80 bg-gold/[0.09]"
-        : "border-bone/12 hover:border-bone/30 hover:bg-bone/[0.02]"
-    }`;
-  const primary =
-    "btn-gold flex-1 py-3.5 sm:py-4 text-[11px] font-bold tracking-[0.32em] text-eclipse uppercase disabled:cursor-not-allowed disabled:opacity-35 short:py-3.5";
-  const back =
-    "border border-bone/15 px-5 text-[11px] font-semibold tracking-[0.25em] text-bone/60 uppercase transition-colors hover:border-bone/35 hover:text-bone";
-
   return (
-    <div className="relative border border-bone/10 bg-eclipse/55 px-5 py-6 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)] backdrop-blur-md sm:px-9 sm:py-9 short:sm:py-7">
-      <span className="gold-rule absolute inset-x-0 top-0 h-px" />
-
-      {/* Header + progress */}
-      <div className="mb-5 sm:mb-7 short:mb-5">
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[1.5rem] leading-none font-light tracking-[-0.01em] text-bone sm:text-3xl">
-            {step === 1 && <>The <span className="font-medium text-gold-light">property</span></>}
-            {step === 2 && <>Your <span className="font-medium text-gold-light">timeline</span></>}
-            {step === 3 && <>Where to <span className="font-medium text-gold-light">reach you</span></>}
-          </h2>
-          <p className="text-[10px] font-semibold tracking-[0.35em] text-bone/40 uppercase">
-            <span className="text-gold-light">0{step}</span> / 03
-          </p>
+    <form
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+      className="rounded-2xl border border-ink/10 bg-white p-4 shadow-[0_10px_40px_-12px_rgba(22,24,29,0.18)] sm:p-7"
+    >
+      <div className="space-y-3.5">
+        <div>
+          <label htmlFor="address" className={labelClass}>Property address</label>
+          <input
+            id="address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="123 Main St, Denver"
+            autoComplete="street-address"
+            enterKeyHint="next"
+            className={fieldClass}
+          />
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-1.5 sm:mt-5">
-          {STEP_LABELS.map((l, i) => (
-            <span
-              key={l}
-              className={`h-[2px] transition-colors duration-500 ${
-                i + 1 <= step ? "bg-gold-light" : "bg-bone/10"
-              }`}
-            />
-          ))}
+        <div>
+          <label htmlFor="name" className={labelClass}>Your name</label>
+          <input
+            id="name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="First and last name"
+            autoComplete="name"
+            enterKeyHint="next"
+            className={fieldClass}
+          />
         </div>
-      </div>
-
-      {step === 1 && (
-        <div className="space-y-4 sm:space-y-5 short:space-y-4">
-          <div>
-            <label className={label}>Property address</label>
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="123 Main St"
-              autoComplete="street-address"
-              className="field"
-            />
-          </div>
-          <div className="grid grid-cols-[1.4fr_0.7fr_0.9fr] gap-4">
-            <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" autoComplete="address-level2" className="field" />
-            <input value={state} onChange={(e) => setState(e.target.value)} placeholder="State" autoComplete="address-level1" className="field" />
-            <input value={zip} onChange={(e) => setZip(e.target.value)} placeholder="ZIP" inputMode="numeric" autoComplete="postal-code" className="field" />
-          </div>
-          <div>
-            <label className={`${label} mb-2.5`}>Condition</label>
-            <div className="grid grid-cols-2 gap-2">
-              {CONDITIONS.map((c) => (
-                <button type="button" key={c.value} onClick={() => setCondition(c.value)} className={choice(condition === c.value)}>
-                  <p className="text-[12.5px] font-semibold whitespace-nowrap text-bone sm:text-[13px]">{c.label}</p>
-                  <p className="mt-0.5 hidden text-[11px] leading-snug text-bone/45 sm:block short:hidden">{c.blurb}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-          {error && <p className="text-sm text-red-300">{error}</p>}
-          <div className="flex pt-1">
-            <button
-              type="button"
-              disabled={!address || !condition || submitting}
-              onClick={() =>
-                advance(2, { address, city, state, zip, condition })
-              }
-              className={primary}
-            >
-              {submitting ? "Saving…" : "Continue →"}
-            </button>
-          </div>
+        <div>
+          <label htmlFor="phone" className={labelClass}>Phone number</label>
+          <input
+            id="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="(303) 555-0123"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            enterKeyHint="done"
+            className={fieldClass}
+          />
         </div>
-      )}
 
-      {step === 2 && (
-        <div className="space-y-6 short:space-y-5">
-          <div>
-            <label className={`${label} mb-2.5`}>How soon do you want to sell?</label>
-            <div className="grid grid-cols-2 gap-2">
-              {TIMELINES.map((t) => (
-                <button type="button" key={t.value} onClick={() => setTimeline(t.value)} className={choice(timeline === t.value)}>
-                  <p className="text-[12.5px] font-semibold text-bone sm:text-[13px]">{t.label}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className={label}>Estimated value {optional}</label>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-0 -translate-y-1/2 text-bone/40">$</span>
-              <input
-                value={estimatedValue}
-                onChange={(e) => setEstimatedValue(e.target.value.replace(/[^0-9]/g, ""))}
-                placeholder="I'm not sure"
-                inputMode="numeric"
-                className="field pl-4!"
-              />
-            </div>
-          </div>
-          <div>
-            <label className={label}>What&rsquo;s prompting the move? {optional}</label>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Relocating, inherited, behind on payments, tired landlord…"
-              rows={2}
-              className="field resize-none"
-            />
-          </div>
-          {error && <p className="text-sm text-red-300">{error}</p>}
-          <div className="flex gap-2 pt-1">
-            <button type="button" onClick={() => setStep(1)} className={back}>Back</button>
-            <button
-              type="button"
-              disabled={!timeline || submitting}
-              onClick={() =>
-                advance(3, {
-                  timeline,
-                  reason_for_selling: reason,
-                  estimated_value: estimatedValue ? Number(estimatedValue) : null,
-                })
-              }
-              className={primary}
-            >
-              {submitting ? "Saving…" : "Continue →"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="space-y-4 sm:space-y-5 short:space-y-4">
-          <div>
-            <label className={label}>Full name</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Smith" autoComplete="name" className="field" />
-          </div>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label className={label}>Phone</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(303) 555-0123" type="tel" autoComplete="tel" className="field" />
-            </div>
-            <div>
-              <label className={label}>Email {optional}</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@email.com" type="email" autoComplete="email" className="field" />
-            </div>
-          </div>
-          <label className="flex cursor-pointer items-start gap-3 select-none">
+        {/* Call permission: big, obvious, and never pre-checked. */}
+        <label
+          key={shake}
+          ref={consentRef}
+          className={`block cursor-pointer rounded-xl border-2 p-4 transition-colors ${
+            callConsent
+              ? "border-brand bg-brand-tint"
+              : remindConsent
+                ? "nudge border-red-500 bg-red-50"
+                : "border-brand/60 bg-brand-tint"
+          }`}
+        >
+          <span className="flex items-start gap-3">
             <input
               type="checkbox"
               checked={callConsent}
-              onChange={(e) => setCallConsent(e.target.checked)}
+              onChange={(e) => {
+                setCallConsent(e.target.checked);
+                if (e.target.checked) setRemindConsent(false);
+              }}
               className="peer sr-only"
             />
             <span
               aria-hidden
-              className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center border transition-colors peer-focus-visible:ring-1 peer-focus-visible:ring-gold-light ${
-                callConsent ? "border-gold-light bg-gold-light" : "border-bone/30"
+              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2 ${
+                callConsent
+                  ? "border-brand bg-brand text-white"
+                  : remindConsent
+                    ? "border-red-500 bg-white"
+                    : "border-brand bg-white"
               }`}
             >
               {callConsent && (
-                <svg viewBox="0 0 12 12" className="h-3 w-3 text-eclipse">
-                  <path d="M2.5 6.2 5 8.5l4.5-5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                <svg viewBox="0 0 20 20" className="h-5 w-5">
+                  <path d="M4 10.5 8 14.5 16 6" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </span>
-            <span className="text-[11px] leading-relaxed text-bone/55">
-              <span className="font-semibold text-bone/85">Yes, call me about my cash offer. </span>
-              {CONSENT_TEXT}
+            <span>
+              <span className="block text-[17px] leading-snug font-bold text-ink">
+                Yes, call me with my cash offer
+              </span>
+              <span className="mt-0.5 block text-[14px] font-semibold text-brand-dark">
+                Check this box so we can call you
+              </span>
             </span>
-          </label>
-          {error && <p className="text-sm text-red-300">{error}</p>}
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setStep(2)} className={back}>Back</button>
-            <button type="button" disabled={submitting} onClick={submitFinal} className={primary}>
-              {submitting ? "Submitting…" : "Request my cash offer"}
+          </span>
+          <span className="mt-2.5 block text-[11.5px] leading-snug text-ink/50">{CONSENT_TEXT}</span>
+        </label>
+
+        {remindConsent && !callConsent && (
+          <p className="text-[15px] leading-snug font-semibold text-red-600">
+            Check the box above so we can call you with your offer.{" "}
+            <button
+              type="button"
+              onClick={() => submit(true)}
+              className="font-medium text-ink/55 underline underline-offset-2"
+            >
+              Submit without a call
             </button>
-          </div>
-        </div>
-      )}
-    </div>
+          </p>
+        )}
+
+        {error && <p className="text-[15px] font-semibold text-red-600">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="block w-full rounded-xl bg-brand py-4 text-[18px] font-extrabold text-white shadow-[0_6px_18px_-6px_rgba(143,102,49,0.7)] transition-colors hover:bg-brand-dark active:translate-y-px disabled:opacity-60"
+        >
+          {submitting ? "Sending…" : "Get My Cash Offer"}
+        </button>
+
+        <p className="flex items-center justify-center gap-1.5 text-[13px] text-ink/50">
+          <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" aria-hidden>
+            <path d="M6 9V6.5a4 4 0 1 1 8 0V9M5 9h10v8H5z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          </svg>
+          Private and secure. No obligation.
+        </p>
+      </div>
+    </form>
   );
 }

@@ -25,7 +25,7 @@ export default function LeadsPage({
   searchParams: Promise<Search>;
 }) {
   return (
-    <div className="flex flex-1 flex-col font-sans">
+    <div className="flex min-h-dvh flex-1 flex-col bg-eclipse-deep font-sans text-bone">
       <header className="border-b border-bone/10">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
