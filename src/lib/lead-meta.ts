@@ -13,7 +13,7 @@ export const STATUSES = [
 // each lead that checks it. If you change the wording, old leads keep the
 // version they actually agreed to.
 export const CONSENT_TEXT =
-  "I agree that SK Home Solutions may call and text me at the number above about my property and a cash offer, including calls made with automated technology and an AI or prerecorded voice. Consent is not required to sell your home. Msg & data rates may apply. Reply STOP to opt out.";
+  "I agree that SK Home Solutions may call and text me at the number above about my property and a cash offer, including automated calls and calls from an automated assistant using an artificial or prerecorded voice. Consent is not required to sell your home. Msg & data rates may apply. Reply STOP to opt out.";
 
 export type LeadStatus = (typeof STATUSES)[number]["value"];
 
