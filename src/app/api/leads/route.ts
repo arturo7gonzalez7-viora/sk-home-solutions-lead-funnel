@@ -1,6 +1,6 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { ensureSchema, getSql } from "@/lib/db";
-import { CONSENT_TEXT } from "@/lib/lead-meta";
+import { CONSENT_TEXT, isColoradoState, isColoradoZip } from "@/lib/lead-meta";
 import { finalizeLead } from "@/lib/lead-pipeline";
 
 const clip = (v: unknown, max = 500) =>
@@ -18,6 +18,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
+  // Colorado only: every save must carry a Colorado ZIP (and no other state).
+  if (
+    !isColoradoZip(clip(body.zip, 20)) ||
+    (body.state != null && !isColoradoState(clip(body.state, 40)))
+  ) {
+    return NextResponse.json({ error: "outside_colorado" }, { status: 400 });
+  }
+
   try {
     await ensureSchema();
     const sql = getSql();
@@ -25,8 +33,8 @@ export async function POST(req: NextRequest) {
     const id = clip(body.id, 64);
     const address = clip(body.address);
     const city = clip(body.city, 120);
-    const state = clip(body.state, 40);
     const zip = clip(body.zip, 20);
+    const state = "CO";
     const rawValue = Number(String(body.estimated_value ?? "").replace(/[^0-9.]/g, ""));
     const estimated_value = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : null;
     const condition = clip(body.condition, 40);

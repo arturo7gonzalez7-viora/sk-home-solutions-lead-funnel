@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CONSENT_TEXT } from "@/lib/lead-meta";
+import { CONSENT_TEXT, isColoradoZip } from "@/lib/lead-meta";
 import { trackLead } from "@/lib/meta-pixel";
 
 const TRACKING_KEYS = [
@@ -118,6 +118,8 @@ const labelClass = "mb-1.5 block text-[15px] font-bold text-ink";
 
 export default function LeadForm() {
   const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [zip, setZip] = useState("");
   const [condition, setCondition] = useState("");
   const [timeline, setTimeline] = useState("");
   const [tried, setTried] = useState(false);
@@ -134,7 +136,12 @@ export default function LeadForm() {
   const submit = async (skipCall = false) => {
     setError(null);
     setTried(true);
-    if (!address.trim()) return setError("Please enter the property address.");
+    if (!address.trim()) return setError("Please enter the property's street address.");
+    if (!city.trim()) return setError("Please enter the city.");
+    if (!/^\d{5}$/.test(zip.trim())) return setError("Please enter the 5-digit ZIP code.");
+    if (!isColoradoZip(zip)) {
+      return setError("Sorry, we only buy homes in Colorado. Please enter a Colorado address.");
+    }
     if (!condition) return setError("Please pick the property's condition.");
     if (!timeline) return setError("Please pick when you'd like to sell.");
     if (!fullName.trim()) return setError("Please enter your name.");
@@ -154,6 +161,9 @@ export default function LeadForm() {
       await saveLead({
         ...getTracking(),
         address: address.trim(),
+        city: city.trim(),
+        state: "CO",
+        zip: zip.trim(),
         condition,
         timeline,
         full_name: fullName.trim(),
@@ -165,7 +175,7 @@ export default function LeadForm() {
       setDone(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Something went wrong. Please check the address is in Colorado and try again.");
     } finally {
       setSubmitting(false);
     }
@@ -203,16 +213,53 @@ export default function LeadForm() {
     >
       <div className="space-y-3.5">
         <div>
-          <label htmlFor="address" className={labelClass}>Property address</label>
+          <label htmlFor="address" className={labelClass}>
+            Property address{" "}
+            <span className="font-semibold text-brand-dark">(Colorado only)</span>
+          </label>
           <input
             id="address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="123 Main St, Denver"
-            autoComplete="street-address"
+            placeholder="Street address"
+            autoComplete="address-line1"
             enterKeyHint="next"
             className={fieldClass}
           />
+          <div className="mt-2 grid grid-cols-[1fr_4.5rem_6.5rem] gap-2">
+            <input
+              id="city"
+              aria-label="City"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="City"
+              autoComplete="address-level2"
+              enterKeyHint="next"
+              className={fieldClass}
+            />
+            <div
+              aria-label="State: Colorado"
+              className="flex items-center justify-center rounded-xl border-2 border-ink/10 bg-ink/[0.04] text-[17px] font-bold text-ink/60"
+            >
+              CO
+            </div>
+            <input
+              id="zip"
+              aria-label="ZIP code"
+              value={zip}
+              onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+              placeholder="ZIP"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              enterKeyHint="next"
+              className={`${fieldClass} ${zip.length === 5 && !isColoradoZip(zip) ? "border-red-500!" : ""}`}
+            />
+          </div>
+          {zip.length === 5 && !isColoradoZip(zip) && (
+            <p className="mt-1.5 text-[14px] font-semibold text-red-600">
+              That ZIP isn&rsquo;t in Colorado. We only buy homes in Colorado.
+            </p>
+          )}
         </div>
         <Choices
           label="Property condition"

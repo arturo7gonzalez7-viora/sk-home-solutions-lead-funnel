@@ -73,3 +73,15 @@ export type Lead = {
 export function isComplete(lead: Pick<Lead, "step_completed" | "phone">) {
   return lead.step_completed >= 3 && !!lead.phone;
 }
+
+// SK Home Solutions only buys in Colorado. Colorado ZIP codes run 80001-81699.
+export function isColoradoZip(zip: string | null | undefined) {
+  const m = /^\s*(\d{5})(?:-\d{4})?\s*$/.exec(zip ?? "");
+  if (!m) return false;
+  const n = Number(m[1]);
+  return n >= 80001 && n <= 81699;
+}
+
+export function isColoradoState(state: string | null | undefined) {
+  return /^\s*(co|colo\.?|colorado)\s*$/i.test(state ?? "");
+}
