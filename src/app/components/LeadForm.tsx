@@ -54,12 +54,73 @@ async function saveLead(payload: Record<string, unknown>) {
 
 const digits = (s: string) => s.replace(/\D/g, "");
 
+const CONDITIONS = [
+  { value: "move_in_ready", label: "Move-in ready" },
+  { value: "clean_working", label: "Good, a bit dated" },
+  { value: "needs_some_work", label: "Needs some work" },
+  { value: "needs_major_work", label: "Needs major work" },
+] as const;
+
+const TIMELINES = [
+  { value: "asap", label: "ASAP" },
+  { value: "30_days", label: "Within 30 days" },
+  { value: "90_days", label: "1 to 3 months" },
+  { value: "just_looking", label: "Just exploring" },
+] as const;
+
+function Choices({
+  label,
+  options,
+  value,
+  onChange,
+  missing,
+}: {
+  label: string;
+  options: readonly { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  missing: boolean;
+}) {
+  return (
+    <fieldset>
+      <legend className={`mb-1.5 block text-[15px] font-bold ${missing ? "text-red-600" : "text-ink"}`}>
+        {label}
+      </legend>
+      <div className="grid grid-cols-2 gap-2">
+        {options.map((o) => {
+          const on = value === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onChange(o.value)}
+              className={`rounded-xl border-2 px-3 py-3 text-[15px] leading-tight font-semibold transition-colors ${
+                on
+                  ? "border-brand bg-brand text-white"
+                  : missing
+                    ? "border-red-300 bg-white text-ink hover:border-red-400"
+                    : "border-ink/15 bg-white text-ink hover:border-brand/50"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 const fieldClass =
   "block w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-3 text-[17px] text-ink placeholder:text-ink/35 transition-colors focus:border-brand focus:outline-none";
 const labelClass = "mb-1.5 block text-[15px] font-bold text-ink";
 
 export default function LeadForm() {
   const [address, setAddress] = useState("");
+  const [condition, setCondition] = useState("");
+  const [timeline, setTimeline] = useState("");
+  const [tried, setTried] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [callConsent, setCallConsent] = useState(false);
@@ -72,7 +133,10 @@ export default function LeadForm() {
 
   const submit = async (skipCall = false) => {
     setError(null);
+    setTried(true);
     if (!address.trim()) return setError("Please enter the property address.");
+    if (!condition) return setError("Please pick the property's condition.");
+    if (!timeline) return setError("Please pick when you'd like to sell.");
     if (!fullName.trim()) return setError("Please enter your name.");
     const d = digits(phone);
     if (d.length < 10 || d.length > 11) return setError("Please enter a valid phone number.");
@@ -90,6 +154,8 @@ export default function LeadForm() {
       await saveLead({
         ...getTracking(),
         address: address.trim(),
+        condition,
+        timeline,
         full_name: fullName.trim(),
         phone: phone.trim(),
         call_consent: callConsent,
@@ -148,6 +214,20 @@ export default function LeadForm() {
             className={fieldClass}
           />
         </div>
+        <Choices
+          label="Property condition"
+          options={CONDITIONS}
+          value={condition}
+          onChange={setCondition}
+          missing={tried && !condition}
+        />
+        <Choices
+          label="When do you want to sell?"
+          options={TIMELINES}
+          value={timeline}
+          onChange={setTimeline}
+          missing={tried && !timeline}
+        />
         <div>
           <label htmlFor="name" className={labelClass}>Your name</label>
           <input

@@ -28,7 +28,7 @@ export default function Home() {
           Get a cash offer on your house.
         </h1>
         <p className="mt-2 text-[17px] leading-snug text-ink/70">
-          Fill this out in 30 seconds and we&rsquo;ll call you.
+          Answer a few quick questions and we&rsquo;ll call you.
         </p>
 
         <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
